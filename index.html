@@ -3,31 +3,1774 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In</title>
+    <title>ML ALERT ME - Next-Gen Smart Alarm & Geofence System</title>
+    
+    <!-- Leaflet.js Mapping Library CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Custom Style Sheet -->
     <link href="style.css" rel="stylesheet" />
-    <link href="dashboard.html" rel="dashboard" />
+    
+    <!-- Lucide Vector Icons Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div id="first-page">
-        <button id="signin-button">Sign In</button>
+
+    <!-- 1. AUTHENTICATION WRAPPER -->
+    <div id="authWrapper" class="auth-wrapper">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <i data-lucide="bell-ring"></i>
+                <h2>ML ALERT ME</h2>
+                <p style="margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--text-secondary);">
+                    Next-Gen Proximity Alert & Smart Alarm System. Combines HTML5 Geofencing, interactive routing analytics, and low-latency Web Audio API synthesizers.
+                </p>
+                <p style="margin-top: 14px; font-weight: 500; font-size: 13px; color: var(--primary);">Sign in to access your panel</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-container">
+                        <input type="text" id="username" class="form-input" placeholder="Enter username" required autocomplete="username">
+                        <i data-lucide="user"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-container">
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                        <i data-lucide="lock"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+                    Sign In <i data-lucide="arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="loginAsGuest()" style="margin-top: 12px; width: 100%;">
+                    Access as Guest <i data-lucide="user-check"></i>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <div id="signin-form" style="display: none;">
-        <h2>Sign In</h2>
-        <form>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required><br><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            <a href="dashboard.html"><button type="button" id="submit-button">Submit</button></a></h></h>
-        </form>
+    <!-- 2. MAIN APPLICATION CONTAINER -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar glass-panel">
+            <div class="brand-logo">
+                <i data-lucide="bell-ring"></i>
+                <span>ML ALERT ME</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="nav-item active" id="nav-dashboard">
+                        <a onclick="navigateTo('dashboard')">
+                            <i data-lucide="layout-dashboard"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-clock">
+                        <a onclick="navigateTo('clock')">
+                            <i data-lucide="clock"></i> Clock Alarm
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-location">
+                        <a onclick="navigateTo('location')">
+                            <i data-lucide="map-pin"></i> Location Alarm
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="profile-avatar" id="avatarName">U</div>
+                <div class="profile-info">
+                    <span class="profile-name" id="userDisplayName">User</span>
+                    <span class="profile-status">Active</span>
+                </div>
+                <a onclick="handleLogout()" style="margin-left: auto; color: var(--danger); cursor: pointer;" title="Sign Out">
+                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Mobile Navigation Bar -->
+        <nav class="mobile-nav">
+            <ul class="mobile-nav-links">
+                <li class="mobile-nav-item active" id="mobnav-dashboard">
+                    <a onclick="navigateTo('dashboard')">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dash</span>
+                    </a>
+                </li>
+                <li class="mobile-nav-item" id="mobnav-clock">
+                    <a onclick="navigateTo('clock')">
+                        <i data-lucide="clock"></i>
+                        <span>Clock</span>
+                    </a>
+                </li>
+                <li class="mobile-nav-item" id="mobnav-location">
+                    <a onclick="navigateTo('location')">
+                        <i data-lucide="map-pin"></i>
+                        <span>Map</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view-section active-view">
+                <div class="dashboard-header">
+                    <div class="welcome-section">
+                        <h1>Welcome Back, <span id="welcomeUserName">User</span>!</h1>
+                        <p>Track your location geofences and active alarms</p>
+                    </div>
+                    <div class="date-badge">
+                        <i data-lucide="calendar"></i>
+                        <span id="currentDateStr">Thursday, 25 June</span>
+                    </div>
+                </div>
+
+                <!-- Stats Overview Grid -->
+                <div class="overview-grid">
+                    <div class="stat-card glass-panel clock-stat">
+                        <div class="stat-card-glow"></div>
+                        <div class="stat-icon"><i data-lucide="alarm-clock"></i></div>
+                        <div class="stat-info">
+                            <h3>Scheduled Alarms</h3>
+                            <div class="stat-value" id="clockAlarmCount">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel location-stat">
+                        <div class="stat-card-glow"></div>
+                        <div class="stat-icon"><i data-lucide="map"></i></div>
+                        <div class="stat-info">
+                            <h3>Geofences Set</h3>
+                            <div class="stat-value" id="geofenceCount">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel active-stat">
+                        <div class="stat-card-glow"></div>
+                        <div class="stat-icon"><i data-lucide="shield-check"></i></div>
+                        <div class="stat-info">
+                            <h3>Monitoring Status</h3>
+                            <div class="stat-value" id="monitoringStatusBadge">Inactive</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions / Lists Panel -->
+                <div class="dashboard-actions">
+                    <div class="quick-panel glass-panel">
+                        <h3 class="quick-panel-title">
+                            <i data-lucide="list-todo"></i> Active Alarms Monitor
+                        </h3>
+                        <div class="recent-alarms-list" id="dashboardActiveAlarmsList">
+                            <!-- Injected by JavaScript -->
+                            <div class="text-muted" style="text-align: center; padding: 20px 0;">No alarms configured. Use Clock or Location alarm panels to add one!</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-panel glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h3 class="quick-panel-title"><i data-lucide="radio"></i> System Control</h3>
+                            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">Use this control to quickly enable or disable all geofences and proximity trackers globally.</p>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 16px;">
+                                <span style="font-weight: 500; font-size: 14px;">Location Tracker</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="globalLocationSwitch" onchange="toggleGlobalTracker(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button class="btn btn-secondary" onclick="testAlarmNotification()" style="font-size: 13px;">
+                                <i data-lucide="volume-2"></i> Test Alarm Output
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clock Alarm View -->
+            <section id="clock-view" class="view-section">
+                <div class="dashboard-header">
+                    <div class="welcome-section">
+                        <h1>Clock Alarm Manager</h1>
+                        <p>Set alarms and wake up to customizable synthesized melodies</p>
+                    </div>
+                </div>
+
+                <div class="clock-main-grid">
+                    <!-- Left: Current Clock Face -->
+                    <div class="clock-panel glass-panel">
+                        <span class="glowing-date" id="liveDateDisplay">Thursday, June 25, 2026</span>
+                        <div class="glowing-clock" id="liveClockDisplay">14:19:00</div>
+                        <div class="alarm-controls">
+                            <form id="clockAlarmForm" onsubmit="addClockAlarm(event)">
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="alarmDateTime">Set Alarm Date & Time</label>
+                                    <input type="datetime-local" id="alarmDateTime" class="form-input" style="padding-left: 16px;" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="alarmLabel">Alarm Name (Optional)</label>
+                                    <div class="input-container">
+                                        <input type="text" id="alarmLabel" class="form-input" placeholder="Wake Up / Task reminder">
+                                        <i data-lucide="tag"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Alarm sound type</label>
+                                    <div class="sound-selector" id="clockSoundSelector">
+                                        <button type="button" class="sound-btn active" data-sound="classic" onclick="selectSoundType('classic')">
+                                            <i data-lucide="music"></i> Beeps
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="siren" onclick="selectSoundType('siren')">
+                                            <i data-lucide="shield-alert"></i> Siren
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="chiptune" onclick="selectSoundType('chiptune')">
+                                            <i data-lucide="gamepad-2"></i> Retro
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="cyber" onclick="selectSoundType('cyber')">
+                                            <i data-lucide="zap"></i> Cyber
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="plus-circle"></i> Create Alarm
+                                </button>
+                            </form>
+                            <div class="help-card" style="margin-top: 24px; text-align: left;">
+                                <h4><i data-lucide="info"></i> Audio Synthesis Melodies</h4>
+                                <p>Our alarm system utilizes low-latency Web Audio API synthesizers. Alarms are generated programmatically using wave oscillators (Square, Sawtooth, Triangle) and linear frequency sweeps, offering modular alarm profiles and high reliability.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Alarms List -->
+                    <div class="quick-panel glass-panel">
+                        <h3 class="quick-panel-title"><i data-lucide="alarm-clock"></i> Active Clock Alarms</h3>
+                        <div class="recent-alarms-list" id="clockAlarmsListContainer">
+                            <!-- Injected by JavaScript -->
+                            <div class="text-muted" style="text-align: center; padding: 40px 0;">
+                                <i data-lucide="bell" style="width: 32px; height: 32px; margin-bottom: 12px; opacity: 0.3;"></i>
+                                <p>No clock alarms configured</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Location Alarm View -->
+            <section id="location-view" class="view-section">
+                <div class="dashboard-header">
+                    <div class="welcome-section">
+                        <h1>Geofence & Location Alarm</h1>
+                        <p>Set a custom route and alarm to wake you up before entering destination areas</p>
+                    </div>
+                </div>
+
+                <div class="location-main-grid">
+                    <!-- Left: Control & Details Card -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="quick-panel glass-panel">
+                            <h3 class="quick-panel-title"><i data-lucide="navigation"></i> Geofence Setup</h3>
+                            <form id="locationAlarmForm" onsubmit="startLocationTracking(event)">
+                                <div class="form-group">
+                                    <label for="routeSource">Source Location</label>
+                                    <div class="input-with-action">
+                                        <div class="autocomplete-wrapper" style="flex-grow: 1;">
+                                            <div class="input-container">
+                                                <input type="text" id="routeSource" class="form-input" placeholder="Type starting address..." required oninput="debounceSearch(this, 'source')">
+                                                <i data-lucide="map-pin"></i>
+                                            </div>
+                                            <ul class="suggestions-list" id="source-suggestions" style="display: none;"></ul>
+                                        </div>
+                                        <button type="button" class="map-pick-btn" id="pickSourceBtn" onclick="toggleMapPicking('source')" title="Pick from Map">
+                                            <i data-lucide="map"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="routeDestination">Destination Location</label>
+                                    <div class="input-with-action">
+                                        <div class="autocomplete-wrapper" style="flex-grow: 1;">
+                                            <div class="input-container">
+                                                <input type="text" id="routeDestination" class="form-input" placeholder="Type destination address..." required oninput="debounceSearch(this, 'destination')">
+                                                <i data-lucide="flag"></i>
+                                            </div>
+                                            <ul class="suggestions-list" id="destination-suggestions" style="display: none;"></ul>
+                                        </div>
+                                        <button type="button" class="map-pick-btn" id="pickDestinationBtn" onclick="toggleMapPicking('destination')" title="Pick from Map">
+                                            <i data-lucide="map"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="geofenceWorkplace">Alarm Geofence Center (Workplace / Area)</label>
+                                    <div class="input-with-action">
+                                        <div class="autocomplete-wrapper" style="flex-grow: 1;">
+                                            <div class="input-container">
+                                                <input type="text" id="geofenceWorkplace" class="form-input" placeholder="Type geofence center address..." required oninput="debounceSearch(this, 'workplace')">
+                                                <i data-lucide="map-pin"></i>
+                                            </div>
+                                            <ul class="suggestions-list" id="workplace-suggestions" style="display: none;"></ul>
+                                        </div>
+                                        <button type="button" class="map-pick-btn" id="pickWorkplaceBtn" onclick="toggleMapPicking('workplace')" title="Pick from Map">
+                                            <i data-lucide="map"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <label style="margin-bottom: 0;">Geofence Radius (meters)</label>
+                                        <span id="radiusLabelValue" style="font-size: 13px; font-weight: 600; color: var(--primary);">200m</span>
+                                    </div>
+                                    <input type="range" id="geofenceRadius" min="50" max="2000" step="50" value="200" style="width: 100%; accent-color: var(--primary);" oninput="updateGeofenceRadius(this.value)">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Alarm Melody</label>
+                                    <div class="sound-selector" id="locationSoundSelector">
+                                        <button type="button" class="sound-btn active" data-sound="classic" onclick="selectLocSoundType('classic')">
+                                            <i data-lucide="music"></i> Beeps
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="siren" onclick="selectLocSoundType('siren')">
+                                            <i data-lucide="shield-alert"></i> Siren
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="chiptune" onclick="selectLocSoundType('chiptune')">
+                                            <i data-lucide="gamepad-2"></i> Retro
+                                        </button>
+                                        <button type="button" class="sound-btn" data-sound="cyber" onclick="selectLocSoundType('cyber')">
+                                            <i data-lucide="zap"></i> Cyber
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button type="submit" class="btn btn-primary" style="flex: 1;" id="locationTrackingSubmitBtn">
+                                        <i data-lucide="navigation"></i> Start Tracker
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" style="flex: 1;" id="simRouteBtn" onclick="runRouteSimulation()">
+                                        <i data-lucide="play-circle"></i> Test Route
+                                    </button>
+                                </div>
+
+                                <!-- Route Analysis Metadata Panel -->
+                                <div class="route-meta-card" id="routeMetaCard" style="display: none;">
+                                    <div class="route-meta-title">
+                                        <i data-lucide="info"></i> Route Summary
+                                    </div>
+                                    <div class="route-meta-grid">
+                                        <div class="route-meta-stat">
+                                            <span class="route-meta-label">Direct Dist</span>
+                                            <span class="route-meta-value" id="routeLineDistance">---</span>
+                                        </div>
+                                        <div class="route-meta-stat">
+                                            <span class="route-meta-label">Est. Route</span>
+                                            <span class="route-meta-value" id="routeTotalDistance">---</span>
+                                        </div>
+                                        <div class="route-meta-stat">
+                                            <span class="route-meta-label">Est. Travel</span>
+                                            <span class="route-meta-value" id="routeEstTime">---</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Simulator Monitoring Status -->
+                        <div id="simPanel" class="quick-panel glass-panel simulation-panel" style="display: none;">
+                            <div class="sim-info">
+                                <span>Tracker Simulation</span>
+                                <span class="sim-badge" id="simBadgeStatus">READY</span>
+                            </div>
+
+                            <!-- Simulation Play/Pause/Stop and Speed controls -->
+                            <div class="sim-controls-row">
+                                <div class="sim-btn-group">
+                                    <button type="button" class="sim-ctrl-btn btn-play" id="simPlayBtn" onclick="resumeRouteSimulation()" title="Resume Simulation">
+                                        <i data-lucide="play"></i>
+                                    </button>
+                                    <button type="button" class="sim-ctrl-btn btn-pause" id="simPauseBtn" onclick="pauseRouteSimulation()" title="Pause Simulation">
+                                        <i data-lucide="pause"></i>
+                                    </button>
+                                    <button type="button" class="sim-ctrl-btn btn-stop" id="simStopBtn" onclick="stopRouteSimulation()" title="Stop & Reset">
+                                        <i data-lucide="square"></i>
+                                    </button>
+                                </div>
+                                <div class="sim-speed-selector">
+                                    <button type="button" class="sim-speed-btn active" id="speed-1" onclick="setSimSpeed(1)">1x</button>
+                                    <button type="button" class="sim-speed-btn" id="speed-5" onclick="setSimSpeed(5)">5x</button>
+                                    <button type="button" class="sim-speed-btn" id="speed-10" onclick="setSimSpeed(10)">10x</button>
+                                    <button type="button" class="sim-speed-btn" id="speed-25" onclick="setSimSpeed(25)">25x</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                                    <span>Distance to geofence</span>
+                                    <span id="simDistanceText" style="font-weight: 600; color: var(--text-primary);">---</span>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                    <div id="simProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 0.1s linear;"></div>
+                                </div>
+                            </div>
+                            <div style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; color: var(--text-secondary);" id="simLogList">
+                                <div>Simulator ready...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Help Guide Card -->
+                        <div class="help-card">
+                            <h4><i data-lucide="help-circle"></i> Geofencing Operations Guide</h4>
+                            <p><b>Search or Map Click:</b> You can search for locations using the autocomplete inputs or click the map icon to activate Map Picking mode and click anywhere on the map to set a point. <br><br><b>Proximity Alerts:</b> Location alarms run client-side using the HTML5 Geolocation API, checking your coordinates against your designated geofence radius. Turn on "Location Tracker" on the dashboard to run this in the background.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Leaflet Interactive Map -->
+                    <div class="map-card glass-panel">
+                        <div id="map" class="map-element"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
+    <!-- 3. GLOwING ALARM TRIGGER OVERLAY -->
+    <div id="alarmOverlay" class="alarm-overlay">
+        <div class="alarm-overlay-glow"></div>
+        <div class="alarm-trigger-box glass-panel">
+            <div class="alarm-icon-glowing">
+                <i data-lucide="bell-ring"></i>
+            </div>
+            <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);" id="triggerAlarmTitle">ALARM RINGING!</h1>
+            <p style="color: var(--text-secondary); font-size: 15px; margin-bottom: 24px;" id="triggerAlarmLabel">Geofence center radius entered!</p>
+            
+            <!-- Real-time audio visualizer -->
+            <canvas id="visualizerCanvas" class="visualizer-canvas" width="400" height="80"></canvas>
+            
+            <button class="btn btn-primary" onclick="dismissTriggeredAlarm()" style="box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3); background: linear-gradient(135deg, var(--danger), var(--secondary)); font-size: 16px; padding: 14px 28px;">
+                <i data-lucide="bell-off"></i> Dismiss Alarm
+            </button>
+            <div class="snooze-options">
+                <button class="btn btn-secondary" onclick="snoozeTriggeredAlarm(5)" style="font-size: 13px;">Snooze 5 Min</button>
+                <button class="btn btn-secondary" onclick="snoozeTriggeredAlarm(10)" style="font-size: 13px;">Snooze 10 Min</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet.js Mapping Library Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Unified SPA Core Javascript -->
     <script>
-        document.getElementById('signin-button').addEventListener('click', function() {
-            document.getElementById('first-page').style.display = 'none';
-            document.getElementById('signin-form').style.display = 'block';
+        // --- REACTIVE STATE STORE ---
+        const state = {
+            currentUser: null,
+            activeTab: 'dashboard',
+            alarms: [], // Clock alarms: { id, label, dateTime, sound, active }
+            geofence: {
+                source: null,      // { label, lat, lon }
+                destination: null, // { label, lat, lon }
+                workplace: null,   // { label, lat, lon }
+                radius: 200,
+                sound: 'classic',
+                active: false
+            },
+            systemTrackerActive: false
+        };
+
+        // --- MAP VARIABLES ---
+        let map = null;
+        let markerSource = null;
+        let markerDestination = null;
+        let markerWorkplace = null;
+        let circleGeofence = null;
+        let routePolyline = null;
+        let simulatedCarMarker = null;
+
+        // --- MAP PICKING VARIABLES ---
+        let mapPickingMode = null; // 'source', 'destination', 'workplace', or null
+
+        // --- SIMULATION CONTROL VARIABLES ---
+        let simState = 'stopped'; // 'stopped', 'playing', 'paused'
+        let simSpeed = 1;
+        let simCurrentIndex = 0;
+        let simPoints = [];
+
+        // --- SYNTH AUDIO & VISUALIZER VARIABLES ---
+        let audioCtx = null;
+        let synthInterval = null;
+        let analyserNode = null;
+        let visualizerAnimationId = null;
+        let activeSoundType = 'classic';
+        let activeLocSoundType = 'classic';
+        let currentTriggeredSound = 'classic'; // correct sound mapping for snoozes
+        let alarmTriggeredActive = false;
+
+        // Geolocation tracking process id
+        let watchPositionId = null;
+
+        // Route simulation interval details
+        let simIntervalId = null;
+
+        // --- DEBOUNCE TIMER ---
+        let searchDebounceTimers = {};
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check LocalStorage auth
+            const storedUser = localStorage.getItem('ml_alert_user');
+            if (storedUser) {
+                state.currentUser = JSON.parse(storedUser);
+                showAppLayout();
+            } else {
+                showAuthLayout();
+            }
+
+            // Init clock display interval
+            setInterval(updateLiveClock, 1000);
+            updateLiveClock();
+
+            // Setup navigation listener for hash back button support
+            window.addEventListener('hashchange', handleHashRouting);
+            
+            // Set date strings
+            const today = new Date();
+            const dateOptions = { weekday: 'long', day: 'numeric', month: 'short' };
+            const fullDateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDateStr').innerText = today.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('liveDateDisplay').innerText = today.toLocaleDateString('en-US', fullDateOptions);
+            
+            // Load alarms from localstorage
+            const savedAlarms = localStorage.getItem('ml_clock_alarms');
+            if (savedAlarms) {
+                state.alarms = JSON.parse(savedAlarms);
+            }
+            
+            // Load geofence from localstorage
+            const savedGeofence = localStorage.getItem('ml_geofence');
+            if (savedGeofence) {
+                state.geofence = JSON.parse(savedGeofence);
+                // sync switch
+                document.getElementById('globalLocationSwitch').checked = state.geofence.active;
+                state.systemTrackerActive = state.geofence.active;
+                
+                // Auto-resume location tracking process if active
+                if (state.geofence.active && state.geofence.workplace) {
+                    startLocationTrackingProcess(state.geofence.workplace);
+                }
+            }
+
+            updateDashboardStats();
+            
+            // Set default date for datetime-local input to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setMinutes(0);
+            tomorrow.setSeconds(0);
+            const offset = tomorrow.getTimezoneOffset();
+            const localTomorrow = new Date(tomorrow.getTime() - (offset*60*1000));
+            document.getElementById('alarmDateTime').value = localTomorrow.toISOString().slice(0, 16);
+            
+            // Render saved alarms on initial load
+            renderClockAlarms();
+
+            // Check alarms loop every second
+            setInterval(checkAlarmsTimer, 1000);
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
         });
+
+        // --- LAYOUTS ---
+        function showAuthLayout() {
+            document.getElementById('authWrapper').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+
+        function showAppLayout() {
+            document.getElementById('authWrapper').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            
+            // Display username
+            const name = state.currentUser.name;
+            document.getElementById('userDisplayName').innerText = name;
+            document.getElementById('welcomeUserName').innerText = name;
+            document.getElementById('avatarName').innerText = name.charAt(0).toUpperCase();
+
+            // Set layout route
+            handleHashRouting();
+        }
+
+        // --- AUTHENTICATION ---
+        function handleLogin(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('username').value.trim();
+            if (usernameInput) {
+                state.currentUser = { name: usernameInput };
+                localStorage.setItem('ml_alert_user', JSON.stringify(state.currentUser));
+                showAppLayout();
+            }
+        }
+
+        function loginAsGuest() {
+            state.currentUser = { name: 'Guest Explorer' };
+            localStorage.setItem('ml_alert_user', JSON.stringify(state.currentUser));
+            showAppLayout();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('ml_alert_user');
+            state.currentUser = null;
+            
+            // Stop any processes
+            stopSynthAlarm();
+            if (simIntervalId) {
+                clearInterval(simIntervalId);
+                simIntervalId = null;
+            }
+            if (watchPositionId !== null) {
+                navigator.geolocation.clearWatch(watchPositionId);
+                watchPositionId = null;
+            }
+            
+            showAuthLayout();
+        }
+
+        // --- ROUTING ---
+        function handleHashRouting() {
+            const hash = window.location.hash.replace('#/', '') || 'dashboard';
+            const routes = ['dashboard', 'clock', 'location'];
+            
+            if (routes.includes(hash)) {
+                state.activeTab = hash;
+            } else {
+                state.activeTab = 'dashboard';
+            }
+
+            // Sync navigation active tags
+            routes.forEach(route => {
+                const navLi = document.getElementById(`nav-${route}`);
+                const mobLi = document.getElementById(`mobnav-${route}`);
+                const section = document.getElementById(`${route}-view`);
+                
+                if (route === state.activeTab) {
+                    if (navLi) navLi.classList.add('active');
+                    if (mobLi) mobLi.classList.add('active');
+                    if (section) {
+                        section.classList.add('active-view');
+                    }
+                } else {
+                    if (navLi) navLi.classList.remove('active');
+                    if (mobLi) mobLi.classList.remove('active');
+                    if (section) {
+                        section.classList.remove('active-view');
+                    }
+                }
+            });
+
+            // Special triggers when landing on specific pages
+            if (state.activeTab === 'location') {
+                setTimeout(initializeLeafletMap, 150); // slight delay for layout display filter rendering
+            } else {
+                // Exit picking mode if leaving map page
+                toggleMapPicking(null);
+            }
+
+            if (state.activeTab === 'clock') {
+                renderClockAlarms();
+            }
+        }
+
+        function navigateTo(route) {
+            window.location.hash = `#/${route}`;
+        }
+
+        // --- LIVE CLOCK UPDATE ---
+        function updateLiveClock() {
+            const clockEl = document.getElementById('liveClockDisplay');
+            if (!clockEl) return;
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            clockEl.innerText = timeStr;
+        }
+
+        // --- CLOCK ALARM LOGIC ---
+        function selectSoundType(type) {
+            activeSoundType = type;
+            const buttons = document.querySelectorAll('#clockSoundSelector .sound-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-sound') === type) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Play a short synth test note
+            testSynthAlarmNote(type);
+        }
+
+        function selectLocSoundType(type) {
+            activeLocSoundType = type;
+            const buttons = document.querySelectorAll('#locationSoundSelector .sound-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-sound') === type) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Play a short synth test note
+            testSynthAlarmNote(type);
+        }
+
+        function addClockAlarm(event) {
+            event.preventDefault();
+            const dtInput = document.getElementById('alarmDateTime').value;
+            const labelInput = document.getElementById('alarmLabel').value.trim() || 'General Alarm';
+            
+            if (!dtInput) return;
+
+            const alarmDate = new Date(dtInput);
+            const now = new Date();
+
+            if (alarmDate <= now) {
+                alert('Please schedule your alarm to a future date & time.');
+                return;
+            }
+
+            const alarm = {
+                id: 'clk_' + Date.now(),
+                label: labelInput,
+                dateTime: dtInput,
+                sound: activeSoundType,
+                active: true
+            };
+
+            state.alarms.push(alarm);
+            localStorage.setItem('ml_clock_alarms', JSON.stringify(state.alarms));
+            
+            // Reset input values
+            document.getElementById('alarmLabel').value = '';
+            
+            renderClockAlarms();
+            updateDashboardStats();
+        }
+
+        function toggleAlarmStatus(id, checkbox) {
+            const idx = state.alarms.findIndex(a => a.id === id);
+            if (idx !== -1) {
+                state.alarms[idx].active = checkbox.checked;
+                localStorage.setItem('ml_clock_alarms', JSON.stringify(state.alarms));
+                updateDashboardStats();
+            }
+        }
+
+        function deleteAlarm(id) {
+            state.alarms = state.alarms.filter(a => a.id !== id);
+            localStorage.setItem('ml_clock_alarms', JSON.stringify(state.alarms));
+            renderClockAlarms();
+            updateDashboardStats();
+        }
+
+        function renderClockAlarms() {
+            const container = document.getElementById('clockAlarmsListContainer');
+            const dashContainer = document.getElementById('dashboardActiveAlarmsList');
+            if (!container) return;
+
+            if (state.alarms.length === 0) {
+                container.innerHTML = `
+                    <div class="text-muted" style="text-align: center; padding: 40px 0;">
+                        <i data-lucide="bell" style="width: 32px; height: 32px; margin-bottom: 12px; opacity: 0.3;"></i>
+                        <p>No clock alarms configured</p>
+                    </div>`;
+                return;
+            }
+
+            // Render Clock View container
+            let html = '';
+            state.alarms.sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime)).forEach(a => {
+                const alarmDt = new Date(a.dateTime);
+                const formatOpts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const dtFormatted = alarmDt.toLocaleString('en-US', formatOpts);
+                
+                html += `
+                    <div class="alarm-item-row">
+                        <div class="alarm-row-info">
+                            <div class="alarm-row-icon clock-type">
+                                <i data-lucide="alarm-clock"></i>
+                            </div>
+                            <div class="alarm-row-details">
+                                <h4>${a.label}</h4>
+                                <p>${dtFormatted} (${a.sound})</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <label class="switch">
+                                <input type="checkbox" ${a.active ? 'checked' : ''} onchange="toggleAlarmStatus('${a.id}', this)">
+                                <span class="slider"></span>
+                            </label>
+                            <a onclick="deleteAlarm('${a.id}')" style="color: var(--danger); cursor: pointer;" title="Delete">
+                                <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                            </a>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- GEOFENCE LOCATION FORM CONTROL ---
+        function updateGeofenceRadius(radiusVal) {
+            state.geofence.radius = parseInt(radiusVal);
+            document.getElementById('radiusLabelValue').innerText = radiusVal + 'm';
+            
+            // Sync geofence circle on map
+            if (circleGeofence && state.geofence.workplace) {
+                circleGeofence.setRadius(state.geofence.radius);
+            }
+            
+            saveGeofenceToStorage();
+        }
+
+        function saveGeofenceToStorage() {
+            localStorage.setItem('ml_geofence', JSON.stringify(state.geofence));
+        }
+
+        // --- DASHBOARD AND STATS RE-RENDERING ---
+        function updateDashboardStats() {
+            document.getElementById('clockAlarmCount').innerText = state.alarms.filter(a => a.active).length;
+            document.getElementById('geofenceCount').innerText = state.geofence.workplace ? '1' : '0';
+            
+            const monStatusEl = document.getElementById('monitoringStatusBadge');
+            if (state.systemTrackerActive) {
+                monStatusEl.innerText = 'Monitoring';
+                monStatusEl.style.color = 'var(--success)';
+            } else {
+                monStatusEl.innerText = 'Inactive';
+                monStatusEl.style.color = 'var(--text-secondary)';
+            }
+
+            renderDashboardAlarmsList();
+        }
+
+        function renderDashboardAlarmsList() {
+            const dashContainer = document.getElementById('dashboardActiveAlarmsList');
+            if (!dashContainer) return;
+
+            let html = '';
+            let count = 0;
+
+            // Render Clock Alarms
+            state.alarms.forEach(a => {
+                if (a.active) {
+                    count++;
+                    const alarmDt = new Date(a.dateTime);
+                    const dtFormatted = alarmDt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    html += `
+                        <div class="alarm-item-row">
+                            <div class="alarm-row-info">
+                                <div class="alarm-row-icon clock-type">
+                                    <i data-lucide="alarm-clock"></i>
+                                </div>
+                                <div class="alarm-row-details">
+                                    <h4>${a.label}</h4>
+                                    <p>${dtFormatted} | Sound: ${a.sound}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="sim-badge" style="background: rgba(0, 240, 255, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 11px;">CLOCK</span>
+                            </div>
+                        </div>`;
+                }
+            });
+
+            // Render Geofence Alarm
+            if (state.geofence.active && state.geofence.workplace) {
+                count++;
+                html += `
+                    <div class="alarm-item-row">
+                        <div class="alarm-row-info">
+                            <div class="alarm-row-icon location-type">
+                                <i data-lucide="map-pin"></i>
+                            </div>
+                            <div class="alarm-row-details">
+                                <h4>Geofence Area</h4>
+                                <p>${state.geofence.workplace.label} (${state.geofence.radius}m)</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="sim-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 4px 8px; border-radius: 6px; font-size: 11px;">GEOFENCE ACTIVE</span>
+                        </div>
+                    </div>`;
+            }
+
+            // Render Route Source
+            if (state.geofence.source) {
+                count++;
+                html += `
+                    <div class="alarm-item-row">
+                        <div class="alarm-row-info">
+                            <div class="alarm-row-icon location-type" style="background: rgba(37, 99, 235, 0.08); color: var(--primary);">
+                                <i data-lucide="map-pin"></i>
+                            </div>
+                            <div class="alarm-row-details">
+                                <h4>Route Source</h4>
+                                <p>${state.geofence.source.label}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="sim-badge" style="background: rgba(37, 99, 235, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 11px;">START POINT</span>
+                        </div>
+                    </div>`;
+            }
+
+            // Render Route Destination
+            if (state.geofence.destination) {
+                count++;
+                html += `
+                    <div class="alarm-item-row">
+                        <div class="alarm-row-info">
+                            <div class="alarm-row-icon location-type" style="background: rgba(16, 185, 129, 0.08); color: var(--success);">
+                                <i data-lucide="flag"></i>
+                            </div>
+                            <div class="alarm-row-details">
+                                <h4>Route Destination</h4>
+                                <p>${state.geofence.destination.label}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="sim-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 4px 8px; border-radius: 6px; font-size: 11px;">END POINT</span>
+                        </div>
+                    </div>`;
+            }
+
+            if (count === 0) {
+                dashContainer.innerHTML = `
+                    <div class="text-muted" style="text-align: center; padding: 20px 0;">
+                        No active alarms configured. Setup Clock or Location alarms!
+                    </div>`;
+            } else {
+                dashContainer.innerHTML = html;
+                lucide.createIcons();
+            }
+        }
+
+        // --- MAPS & AUTOCOMPLETE INTEGRATION (LEAFLET.JS) ---
+        function initializeLeafletMap() {
+            if (map !== null) {
+                map.invalidateSize();
+                return;
+            }
+
+            // Center defaults to a general coordinate
+            const defaultLat = 40.7128;
+            const defaultLon = -74.0060;
+
+            map = L.map('map', {
+                zoomControl: true,
+                attributionControl: false
+            }).setView([defaultLat, defaultLon], 13);
+
+            // Add standard dark/cyber styling tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // Set map click interaction to drop geofence marker or end points
+            map.on('click', (e) => {
+                const lat = e.latlng.lat;
+                const lon = e.latlng.lng;
+                
+                if (mapPickingMode) {
+                    const label = `Selected Map Location (${lat.toFixed(5)}, ${lon.toFixed(5)})`;
+                    if (mapPickingMode === 'workplace') {
+                        setGeofenceCenterCoordinates(lat, lon, label);
+                    } else {
+                        setRouteEndpointMarker(mapPickingMode, lat, lon, label);
+                        document.getElementById(`route${mapPickingMode.charAt(0).toUpperCase() + mapPickingMode.slice(1)}`).value = label;
+                    }
+                    toggleMapPicking(null); // turn off picking mode
+                } else {
+                    // Set workplace coordinates directly by default
+                    setGeofenceCenterCoordinates(lat, lon, `Selected Map Position (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+                }
+            });
+
+            // Initialize markers if loaded from localStorage
+            if (state.geofence.workplace) {
+                const wp = state.geofence.workplace;
+                setGeofenceCenterCoordinates(wp.lat, wp.lon, wp.label, false);
+            }
+            if (state.geofence.source) {
+                const src = state.geofence.source;
+                setRouteEndpointMarker('source', src.lat, src.lon, src.label);
+                document.getElementById('routeSource').value = src.label;
+            }
+            if (state.geofence.destination) {
+                const dest = state.geofence.destination;
+                setRouteEndpointMarker('destination', dest.lat, dest.lon, dest.label);
+                document.getElementById('routeDestination').value = dest.label;
+            }
+            if (state.geofence.source && state.geofence.destination) {
+                plotRouteBetweenEndpoints();
+            }
+
+            // Attempt to fetch current position to center map
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    map.setView([lat, lon], 14);
+                    
+                    // Add a pulse marker for user actual location
+                    L.circleMarker([lat, lon], {
+                        radius: 8,
+                        fillColor: '#2563eb',
+                        color: '#ffffff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map).bindPopup("Your Current Location");
+                }, err => {
+                    console.log("Browser geolocation permission not granted or failed.");
+                });
+            }
+        }
+
+        function toggleMapPicking(type) {
+            // Remove active states from other pick buttons
+            document.querySelectorAll('.map-pick-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (type === mapPickingMode || type === null) {
+                mapPickingMode = null;
+                document.getElementById('map').style.cursor = '';
+            } else {
+                mapPickingMode = type;
+                document.getElementById('map').style.cursor = 'crosshair';
+                
+                // Add active class to corresponding button
+                let btnId = '';
+                if (type === 'source') btnId = 'pickSourceBtn';
+                else if (type === 'destination') btnId = 'pickDestinationBtn';
+                else if (type === 'workplace') btnId = 'pickWorkplaceBtn';
+                
+                const btn = document.getElementById(btnId);
+                if (btn) btn.classList.add('active');
+            }
+        }
+
+        // Drop geofence pin
+        function setGeofenceCenterCoordinates(lat, lon, label, centerMap = true) {
+            state.geofence.workplace = { label, lat, lon };
+            document.getElementById('geofenceWorkplace').value = label;
+            saveGeofenceToStorage();
+            updateDashboardStats();
+
+            // Clear old workplace elements
+            if (markerWorkplace) map.removeLayer(markerWorkplace);
+            if (circleGeofence) map.removeLayer(circleGeofence);
+
+            // Create pulsing custom icon
+            const wpIcon = L.divIcon({
+                html: '<div class="pulse-marker-wrapper"><div class="map-marker-pulse">📍</div></div>',
+                className: 'custom-wp-marker',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            markerWorkplace = L.marker([lat, lon], { icon: wpIcon }).addTo(map)
+                .bindPopup(`<b>Geofence Alert Center</b><br>${label}`)
+                .openPopup();
+
+            circleGeofence = L.circle([lat, lon], {
+                color: '#7c3aed',
+                fillColor: '#7c3aed',
+                fillOpacity: 0.15,
+                radius: state.geofence.radius,
+                weight: 2,
+                dashArray: '5, 5'
+            }).addTo(map);
+
+            if (centerMap) {
+                map.setView([lat, lon], 15);
+            }
+            
+            // Re-plot route in case we are routing through workplace
+            if (state.geofence.source && state.geofence.destination) {
+                plotRouteBetweenEndpoints();
+            }
+        }
+
+        // Set route markers
+        function setRouteEndpointMarker(type, lat, lon, label) {
+            if (type === 'source') {
+                state.geofence.source = { label, lat, lon };
+                if (markerSource) map.removeLayer(markerSource);
+                
+                const srcIcon = L.divIcon({
+                    html: '<div style="background-color: #2563eb; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(37,99,235,0.6)"></div>',
+                    className: 'custom-src-marker',
+                    iconSize: [14, 14]
+                });
+                markerSource = L.marker([lat, lon], { icon: srcIcon }).addTo(map).bindPopup(`Source: ${label}`);
+            } else {
+                state.geofence.destination = { label, lat, lon };
+                if (markerDestination) map.removeLayer(markerDestination);
+                
+                const destIcon = L.divIcon({
+                    html: '<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(16,185,129,0.6)"></div>',
+                    className: 'custom-dest-marker',
+                    iconSize: [14, 14]
+                });
+                markerDestination = L.marker([lat, lon], { icon: destIcon }).addTo(map).bindPopup(`Destination: ${label}`);
+            }
+
+            saveGeofenceToStorage();
+            plotRouteBetweenEndpoints();
+        }
+
+        function plotRouteBetweenEndpoints() {
+            if (!state.geofence.source || !state.geofence.destination) return;
+
+            // Clear old route lines
+            if (routePolyline) map.removeLayer(routePolyline);
+
+            const points = [
+                [state.geofence.source.lat, state.geofence.source.lon],
+                [state.geofence.destination.lat, state.geofence.destination.lon]
+            ];
+
+            // If workplace is set, route through workplace coordinate waypoints
+            if (state.geofence.workplace) {
+                points.splice(1, 0, [state.geofence.workplace.lat, state.geofence.workplace.lon]);
+            }
+
+            routePolyline = L.polyline(points, {
+                color: '#2563eb',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '10, 10',
+                lineJoin: 'round'
+            }).addTo(map);
+
+            map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+
+            // CALCULATE ROUTE METADATA
+            // Direct line distance
+            const directDist = getDistanceFromLatLonInKm(
+                state.geofence.source.lat, state.geofence.source.lon,
+                state.geofence.destination.lat, state.geofence.destination.lon
+            );
+
+            // Polyline route distance
+            let routeDist = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                routeDist += getDistanceFromLatLonInKm(
+                    points[i][0], points[i][1],
+                    points[i + 1][0], points[i + 1][1]
+                );
+            }
+
+            // Est Travel Time at 50 km/h
+            const speedKmh = 50;
+            const travelTimeMin = (routeDist / speedKmh) * 60;
+
+            // Update UI fields
+            document.getElementById('routeLineDistance').innerText = directDist.toFixed(2) + ' km';
+            document.getElementById('routeTotalDistance').innerText = routeDist.toFixed(2) + ' km';
+            
+            if (travelTimeMin < 60) {
+                document.getElementById('routeEstTime').innerText = Math.round(travelTimeMin) + ' mins';
+            } else {
+                const hrs = Math.floor(travelTimeMin / 60);
+                const mins = Math.round(travelTimeMin % 60);
+                document.getElementById('routeEstTime').innerText = `${hrs}h ${mins}m`;
+            }
+
+            // Display metadata panel card
+            document.getElementById('routeMetaCard').style.display = 'block';
+        }
+
+        // --- ADDRESS SEARCH (NOMINATIM GECODING) ---
+        function debounceSearch(inputEl, type) {
+            const query = inputEl.value.trim();
+            const suggestionsList = document.getElementById(`${type}-suggestions`);
+            
+            if (searchDebounceTimers[type]) {
+                clearTimeout(searchDebounceTimers[type]);
+            }
+
+            if (query.length < 3) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+
+            searchDebounceTimers[type] = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsList.innerHTML = '';
+                        if (data.length > 0) {
+                            suggestionsList.style.display = 'block';
+                            data.forEach(item => {
+                                const li = document.createElement('li');
+                                li.className = 'suggestion-item';
+                                li.innerText = item.display_name;
+                                li.onclick = () => {
+                                    inputEl.value = item.display_name;
+                                    suggestionsList.style.display = 'none';
+                                    
+                                    const lat = parseFloat(item.lat);
+                                    const lon = parseFloat(item.lon);
+                                    
+                                    if (type === 'workplace') {
+                                        setGeofenceCenterCoordinates(lat, lon, item.display_name);
+                                    } else {
+                                        setRouteEndpointMarker(type, lat, lon, item.display_name);
+                                    }
+                                };
+                                suggestionsList.appendChild(li);
+                            });
+                        } else {
+                            suggestionsList.style.display = 'none';
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Nominatim geocoding error:", err);
+                    });
+            }, 600);
+        }
+
+        // Close suggestions list if clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                document.querySelectorAll('.suggestions-list').forEach(list => {
+                    list.style.display = 'none';
+                });
+            }
+        });
+
+        // --- GEOFENCE MONITORING ENGINE (REAL TIME) ---
+        function toggleGlobalTracker(checkbox) {
+            state.geofence.active = checkbox.checked;
+            state.systemTrackerActive = checkbox.checked;
+            saveGeofenceToStorage();
+            updateDashboardStats();
+
+            if (checkbox.checked) {
+                if (state.geofence.workplace) {
+                    startLocationTrackingProcess(state.geofence.workplace);
+                } else {
+                    alert("Please select your alarm geofence center on the Location page first.");
+                    checkbox.checked = false;
+                    state.geofence.active = false;
+                    state.systemTrackerActive = false;
+                    saveGeofenceToStorage();
+                    updateDashboardStats();
+                }
+            } else {
+                stopLocationTrackingProcess();
+            }
+        }
+
+        function startLocationTracking(event) {
+            event.preventDefault();
+            if (!state.geofence.workplace) {
+                alert("Please select a Workplace / Geofence Center location.");
+                return;
+            }
+
+            state.geofence.active = true;
+            state.systemTrackerActive = true;
+            document.getElementById('globalLocationSwitch').checked = true;
+            saveGeofenceToStorage();
+            updateDashboardStats();
+
+            startLocationTrackingProcess(state.geofence.workplace);
+            alert("Location tracking started! The geofence is active.");
+        }
+
+        function startLocationTrackingProcess(wp) {
+            stopLocationTrackingProcess(); // ensure duplicate tracking is avoided
+
+            if (navigator.geolocation) {
+                watchPositionId = navigator.geolocation.watchPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    const distance = getDistanceFromLatLonInKm(lat, lon, wp.lat, wp.lon) * 1000; // in meters
+                    
+                    if (distance <= state.geofence.radius) {
+                        triggerAlarm("GEOFENCE REACHED!", `You are within ${distance.toFixed(0)} meters of ${wp.label}!`, activeLocSoundType);
+                    }
+                }, error => {
+                    console.error("WatchPosition error: ", error);
+                }, {
+                    enableHighAccuracy: true,
+                    maximumAge: 1000,
+                    timeout: 20000
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function stopLocationTrackingProcess() {
+            if (watchPositionId !== null) {
+                navigator.geolocation.clearWatch(watchPositionId);
+                watchPositionId = null;
+            }
+        }
+
+        // --- GEOFENCE SIMULATION MODE (TESTING ON PC) ---
+        function runRouteSimulation() {
+            if (!state.geofence.source || !state.geofence.destination || !state.geofence.workplace) {
+                alert("Please select Source, Destination, and Workplace (Geofence Center) coordinates first.");
+                return;
+            }
+
+            // Stop real tracking for simulator testing
+            stopLocationTrackingProcess();
+            if (simIntervalId) clearInterval(simIntervalId);
+
+            // Display simulator panel card
+            const simPanel = document.getElementById('simPanel');
+            simPanel.style.display = 'block';
+            
+            const logEl = document.getElementById('simLogList');
+            logEl.innerHTML = '<div>Generating route simulation...</div>';
+            
+            // Add custom car marker to map
+            if (simulatedCarMarker) map.removeLayer(simulatedCarMarker);
+            
+            const carIcon = L.divIcon({
+                html: '<div style="background-color: #ff4a6b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(255, 74, 107, 0.8)">🚘</div>',
+                className: 'sim-car-marker',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+            
+            simulatedCarMarker = L.marker([state.geofence.source.lat, state.geofence.source.lon], { icon: carIcon }).addTo(map);
+            
+            // Generate path coordinates (100 steps)
+            simPoints = [];
+            const steps = 100;
+            const startLat = state.geofence.source.lat;
+            const startLon = state.geofence.source.lon;
+            const endLat = state.geofence.destination.lat;
+            const endLon = state.geofence.destination.lon;
+            
+            for (let i = 0; i <= steps; i++) {
+                const ratio = i / steps;
+                const lat = startLat + (endLat - startLat) * ratio;
+                const lon = startLon + (endLon - startLon) * ratio;
+                simPoints.push({ lat, lon });
+            }
+
+            simCurrentIndex = 0;
+            simState = 'playing';
+            setSimSpeed(1); // default 1x
+
+            const logEntry = (txt) => {
+                const row = document.createElement('div');
+                row.innerText = `[${new Date().toLocaleTimeString()}] ${txt}`;
+                logEl.appendChild(row);
+                logEl.scrollTop = logEl.scrollHeight;
+            };
+
+            logEntry(`Starting simulation. Route: Source to Destination.`);
+            startSimulationInterval();
+        }
+
+        function startSimulationInterval() {
+            if (simIntervalId) clearInterval(simIntervalId);
+            const intervalTime = Math.max(10, 300 / simSpeed); // cap speed interval min
+            simIntervalId = setInterval(simulationTick, intervalTime);
+        }
+
+        function simulationTick() {
+            if (simState !== 'playing') return;
+
+            const logEl = document.getElementById('simLogList');
+            const logEntry = (txt) => {
+                const row = document.createElement('div');
+                row.innerText = `[${new Date().toLocaleTimeString()}] ${txt}`;
+                logEl.appendChild(row);
+                logEl.scrollTop = logEl.scrollHeight;
+            };
+
+            simCurrentIndex++;
+
+            if (simCurrentIndex >= simPoints.length) {
+                clearInterval(simIntervalId);
+                simIntervalId = null;
+                simState = 'stopped';
+                document.getElementById('simBadgeStatus').innerText = 'ARRIVED';
+                document.getElementById('simBadgeStatus').style.background = 'rgba(57, 224, 155, 0.15)';
+                document.getElementById('simBadgeStatus').style.color = 'var(--success)';
+                logEntry(`Simulation completed. Destination reached without triggering geofence.`);
+                return;
+            }
+
+            const pt = simPoints[simCurrentIndex];
+            simulatedCarMarker.setLatLng([pt.lat, pt.lon]);
+            map.panTo([pt.lat, pt.lon]);
+
+            const distanceToWp = getDistanceFromLatLonInKm(pt.lat, pt.lon, state.geofence.workplace.lat, state.geofence.workplace.lon) * 1000;
+            const radius = state.geofence.radius;
+
+            document.getElementById('simDistanceText').innerText = `${distanceToWp.toFixed(0)}m`;
+            
+            // Progress bar (percentage to workplace geofence radius boundary)
+            const percentage = Math.max(0, Math.min(100, (1 - (distanceToWp / 1000)) * 100));
+            document.getElementById('simProgressBar').style.width = `${percentage}%`;
+
+            if (distanceToWp <= radius) {
+                clearInterval(simIntervalId);
+                simIntervalId = null;
+                simState = 'stopped';
+                document.getElementById('simBadgeStatus').innerText = 'TRIGGERED';
+                document.getElementById('simBadgeStatus').style.background = 'rgba(255, 74, 107, 0.2)';
+                document.getElementById('simBadgeStatus').style.color = 'var(--danger)';
+                
+                logEntry(`ALERT: Geofence Entered! Proximity: ${distanceToWp.toFixed(0)}m. Radius limit: ${radius}m.`);
+                triggerAlarm("GEOFENCE SIMULATION ALERT", `Simulated vehicle entered alert zone for ${state.geofence.workplace.label}!`, activeLocSoundType);
+            } else {
+                logEntry(`Step ${simCurrentIndex}/100: Proximity to alert zone = ${distanceToWp.toFixed(0)}m`);
+            }
+        }
+
+        function pauseRouteSimulation() {
+            if (simState !== 'playing') return;
+            simState = 'paused';
+            document.getElementById('simBadgeStatus').innerText = 'PAUSED';
+            document.getElementById('simBadgeStatus').style.background = 'rgba(255, 184, 77, 0.15)';
+            document.getElementById('simBadgeStatus').style.color = 'var(--warning)';
+            
+            const logEl = document.getElementById('simLogList');
+            const row = document.createElement('div');
+            row.innerText = `[${new Date().toLocaleTimeString()}] Simulation paused.`;
+            logEl.appendChild(row);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function resumeRouteSimulation() {
+            if (simState !== 'paused') return;
+            simState = 'playing';
+            document.getElementById('simBadgeStatus').innerText = 'DRIVING';
+            document.getElementById('simBadgeStatus').style.background = 'rgba(181, 95, 230, 0.15)';
+            document.getElementById('simBadgeStatus').style.color = 'var(--secondary)';
+            
+            const logEl = document.getElementById('simLogList');
+            const row = document.createElement('div');
+            row.innerText = `[${new Date().toLocaleTimeString()}] Simulation resumed.`;
+            logEl.appendChild(row);
+            logEl.scrollTop = logEl.scrollHeight;
+            
+            startSimulationInterval();
+        }
+
+        function stopRouteSimulation() {
+            simState = 'stopped';
+            if (simIntervalId) {
+                clearInterval(simIntervalId);
+                simIntervalId = null;
+            }
+            if (simulatedCarMarker) {
+                map.removeLayer(simulatedCarMarker);
+                simulatedCarMarker = null;
+            }
+            document.getElementById('simPanel').style.display = 'none';
+        }
+
+        function setSimSpeed(speed) {
+            simSpeed = speed;
+            document.querySelectorAll('.sim-speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`speed-${speed}`).classList.add('active');
+            
+            const logEl = document.getElementById('simLogList');
+            if (logEl) {
+                const row = document.createElement('div');
+                row.innerText = `[${new Date().toLocaleTimeString()}] Speed adjusted to ${speed}x.`;
+                logEl.appendChild(row);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+
+            if (simState === 'playing') {
+                startSimulationInterval();
+            }
+        }
+
+        // Distance formula (Haversine)
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of earth
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        // --- TIMED CLOCK ALARM CHECKER ---
+        function checkAlarmsTimer() {
+            if (alarmTriggeredActive) return; // avoid overlapping alerts
+
+            const now = new Date();
+            // Match with time strings up to minutes
+            const nowLocalIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60 * 1000)).toISOString().slice(0, 16);
+
+            state.alarms.forEach(a => {
+                if (a.active && a.dateTime.slice(0, 16) === nowLocalIso) {
+                    // Trigger alarm
+                    a.active = false; // deactivate to prevent repeat triggers
+                    localStorage.setItem('ml_clock_alarms', JSON.stringify(state.alarms));
+                    renderClockAlarms();
+                    updateDashboardStats();
+
+                    triggerAlarm(a.label, `Scheduled time reached: ${a.dateTime.replace('T', ' ')}`, a.sound);
+                }
+            });
+        }
+
+        // --- ALARM SOUND GENERATION & VISUALIZER (WEB AUDIO API) ---
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 64;
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function testSynthAlarmNote(type) {
+            initAudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'classic') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, now);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'siren') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'chiptune') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'cyber') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+
+        function startSynthAlarm(type) {
+            initAudioContext();
+            stopSynthAlarm();
+            
+            alarmTriggeredActive = true;
+            
+            // Canvas visualization trigger
+            startVisualizerAnimation();
+
+            let step = 0;
+            synthInterval = setInterval(() => {
+                if (!audioCtx) return;
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(analyserNode);
+                analyserNode.connect(audioCtx.destination);
+                
+                const now = audioCtx.currentTime;
+                
+                if (type === 'classic') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(950, now);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'siren') {
+                    osc.type = 'sawtooth';
+                    const freq = step % 2 === 0 ? 880 : 587.33; // alternating notes
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'chiptune') {
+                    // Play rapid sequence
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5-E5-G5-C6
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        
+                        noteOsc.type = 'triangle';
+                        noteOsc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        
+                        noteGain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.07);
+                        
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(analyserNode);
+                        
+                        noteOsc.start(now + idx * 0.08);
+                        noteOsc.stop(now + idx * 0.08 + 0.08);
+                    });
+                } else if (type === 'cyber') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.exponentialRampToValueAtTime(1500, now + 0.4);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+                
+                step++;
+            }, 550);
+        }
+
+        function stopSynthAlarm() {
+            alarmTriggeredActive = false;
+            if (synthInterval) {
+                clearInterval(synthInterval);
+                synthInterval = null;
+            }
+            if (visualizerAnimationId) {
+                cancelAnimationFrame(visualizerAnimationId);
+                visualizerAnimationId = null;
+            }
+        }
+
+        function startVisualizerAnimation() {
+            const canvas = document.getElementById('visualizerCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const bufferLength = analyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function draw() {
+                if (!alarmTriggeredActive) return;
+                visualizerAnimationId = requestAnimationFrame(draw);
+                
+                analyserNode.getByteFrequencyData(dataArray);
+                
+                ctx.fillStyle = 'rgba(8, 12, 20, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = (canvas.width / bufferLength) * 2;
+                let barHeight;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] / 2.2;
+                    
+                    const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+                    gradient.addColorStop(0, '#00f0ff');
+                    gradient.addColorStop(1, '#d946ef');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+                    
+                    x += barWidth;
+                }
+            }
+            
+            draw();
+        }
+
+        // --- GLOwING ALARM TRIGGER ACTIONS ---
+        function triggerAlarm(title, label, soundType) {
+            currentTriggeredSound = soundType; // Save active triggered sound type
+            document.getElementById('triggerAlarmTitle').innerText = title;
+            document.getElementById('triggerAlarmLabel').innerText = label;
+            document.getElementById('alarmOverlay').classList.add('active');
+            
+            startSynthAlarm(soundType);
+        }
+
+        function testAlarmNotification() {
+            triggerAlarm("AUDIO ALARM TEST", "Validating audio output engine synthesizers...", "classic");
+        }
+
+        function dismissTriggeredAlarm() {
+            document.getElementById('alarmOverlay').classList.remove('active');
+            stopSynthAlarm();
+        }
+
+        function snoozeTriggeredAlarm(minutes) {
+            document.getElementById('alarmOverlay').classList.remove('active');
+            stopSynthAlarm();
+
+            // Create a snooze timer in the future
+            const snoozeTime = new Date();
+            snoozeTime.setMinutes(snoozeTime.getMinutes() + minutes);
+            
+            const offset = snoozeTime.getTimezoneOffset();
+            const localSnooze = new Date(snoozeTime.getTime() - (offset*60*1000));
+            const dtString = localSnooze.toISOString().slice(0, 16);
+
+            const snoozedAlarm = {
+                id: 'snooze_' + Date.now(),
+                label: 'Snoozed: ' + document.getElementById('triggerAlarmTitle').innerText,
+                dateTime: dtString,
+                sound: currentTriggeredSound, // Use the correct triggered sound type
+                active: true
+            };
+
+            state.alarms.push(snoozedAlarm);
+            localStorage.setItem('ml_clock_alarms', JSON.stringify(state.alarms));
+            
+            renderClockAlarms();
+            updateDashboardStats();
+
+            alert(`Alarm snoozed for ${minutes} minutes (scheduled for ${dtString.replace('T', ' ')}).`);
+        }
     </script>
 </body>
 </html>

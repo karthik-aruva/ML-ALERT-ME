@@ -656,8 +656,8 @@ input:checked + .slider:before {
     margin: 20px 0;
     padding: 16px 32px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(37, 99, 235, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: inline-block;
 }
 
@@ -697,7 +697,7 @@ input:checked + .slider:before {
 .sound-btn {
     padding: 10px 14px;
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-size: 13px;
@@ -710,12 +710,12 @@ input:checked + .slider:before {
 }
 
 .sound-btn:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
 }
 
 .sound-btn.active {
-    background: rgba(124, 58, 237, 0.08);
+    background: rgba(139, 92, 246, 0.15);
     border-color: var(--secondary);
     color: var(--secondary);
 }
@@ -739,7 +739,7 @@ input:checked + .slider:before {
     width: 100%;
     flex-grow: 1;
     z-index: 5;
-    background: #e2e8f0;
+    background: #110e24;
 }
 
 .autocomplete-wrapper {
@@ -752,10 +752,10 @@ input:checked + .slider:before {
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: #ffffff;
+    background: rgba(20, 16, 36, 0.95);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
     list-style: none;
     z-index: 999;
     max-height: 200px;
@@ -768,7 +768,7 @@ input:checked + .slider:before {
     color: var(--text-secondary);
     cursor: pointer;
     transition: var(--transition-fast);
-    border-bottom: 1px solid rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .suggestion-item:last-child {
@@ -776,21 +776,21 @@ input:checked + .slider:before {
 }
 
 .suggestion-item:hover {
-    background: rgba(37, 99, 235, 0.05);
+    background: rgba(139, 92, 246, 0.15);
     color: var(--primary);
 }
 
 /* Leaflet light customizer override */
 .leaflet-container {
-    background-color: #f1f5f9 !important;
+    background-color: #110e24 !important;
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(20, 16, 36, 0.95) !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border-color) !important;
     backdrop-filter: blur(10px) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
 }
 
 /* Modal and visual overlay for active trigger */

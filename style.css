@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap');
 
 :root {
-    --bg-primary: #faf6ec;
-    --bg-surface: rgba(255, 255, 255, 0.7);
-    --bg-surface-hover: rgba(255, 255, 255, 0.85);
-    --border-color: rgba(0, 0, 0, 0.05);
-    --border-color-glow: rgba(37, 99, 235, 0.25);
+    --bg-primary: #0a0717;
+    --bg-surface: rgba(255, 255, 255, 0.03);
+    --bg-surface-hover: rgba(255, 255, 255, 0.07);
+    --border-color: rgba(255, 255, 255, 0.06);
+    --border-color-glow: rgba(139, 92, 246, 0.35);
     
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
     
-    --primary: #2563eb;
-    --primary-glow: rgba(37, 99, 235, 0.2);
-    --secondary: #7c3aed;
-    --secondary-glow: rgba(124, 58, 237, 0.2);
+    --primary: #8b5cf6;
+    --primary-glow: rgba(139, 92, 246, 0.3);
+    --secondary: #ec4899;
+    --secondary-glow: rgba(236, 72, 153, 0.3);
     
     --success: #10b981;
-    --success-glow: rgba(16, 185, 129, 0.2);
-    --warning: #f59e0b;
+    --success-glow: rgba(16, 185, 129, 0.3);
+    --warning: #fbbf24;
     --danger: #ef4444;
-    --danger-glow: rgba(239, 68, 68, 0.2);
+    --danger-glow: rgba(239, 68, 68, 0.3);
     
     --sidebar-width: 280px;
     --nav-height: 72px;
@@ -99,7 +99,7 @@ body {
 .sidebar {
     width: var(--sidebar-width);
     border-right: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.45);
+    background: var(--bg-surface);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
@@ -340,7 +340,7 @@ body {
 
 .form-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 12px 16px 12px 42px;
@@ -353,8 +353,8 @@ body {
 .form-input:focus {
     outline: none;
     border-color: var(--primary);
-    background: #ffffff;
-    box-shadow: 0 0 15px rgba(37, 99, 235, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
 }
 
 .form-input:focus + i {
@@ -380,22 +380,22 @@ body {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: #ffffff;
-    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.45);
 }
 
 .btn-secondary {
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.10);
     border-color: var(--text-secondary);
 }
 
@@ -542,7 +542,7 @@ body {
     justify-content: space-between;
     padding: 14px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-color);
 }
 
